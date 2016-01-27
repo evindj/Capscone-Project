@@ -15,5 +15,6 @@
     <string name="str_to_date">Return date</string>
     <string name="hint_airport_text">3 letters</string>
     <string name="Three_letters">3 letters</string>
+    <string name="search_description">search for flights now</string>
 
 </resources>
