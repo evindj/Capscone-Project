@@ -11,6 +11,17 @@ import java.util.ArrayList;
  */
 public class TripOption implements Serializable {
 
+    public int getDuration() {
+        int duration = 0;
+        for (Slice c:this.getSlices()
+             ) {
+
+            duration =+ c.getDuration();
+        }
+        return duration;
+    }
+
+
     @Expose
     private String saleTotal;
     @Expose

@@ -11,10 +11,20 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    signingConfigs {
+        release {
+            storeFile file("myreleasekey.keystore")
+            storePassword System.getenv("KSTOREPWD")
+            keyPassword System.getenv("KEYPWD")
+            keyAlias "MyReleaseKey"
+
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 }
@@ -30,6 +40,7 @@ dependencies {
     compile 'com.android.support:palette-v7:22.1.0'
     compile 'com.android.support:recyclerview-v7:22.0.0'
     compile 'com.android.support:cardview-v7:22.0.0'
+    compile 'com.android.support:gridlayout-v7:23.1.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.squareup.retrofit:retrofit:2.0.0-beta2'
     compile 'com.google.code.gson:gson:2.5'

@@ -87,7 +87,7 @@ public class ItemsProvider extends ContentProvider {
 			case FLIGHTS: {
 				final long _id = db.insertOrThrow(Tables.FLIGHTS, null, values);
 				getContext().getContentResolver().notifyChange(uri, null);
-				return ItemsContract.Items.buildItemUri(_id);
+				return ItemsContract.Flights.buildItemUri(_id);
 			}
 			default: {
 				throw new UnsupportedOperationException("Unknown uri: " + uri);

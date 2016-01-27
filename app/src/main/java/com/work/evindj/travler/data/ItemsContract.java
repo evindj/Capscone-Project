@@ -55,7 +55,6 @@ public class ItemsContract {
 	public static class Flights implements BaseColumns{
 		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.com.work.evindj.travler.flights";
 		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.com.work.evindj.travler.flights";
-
 		public static final String TABLE_NAME = "flights";
 		public static final String _ID = "flight_id";
 		public static final String TOTAL_DURATION = "duration";
@@ -63,6 +62,8 @@ public class ItemsContract {
 		public static final String NUMBER_STOPS = "stops";
 		public static final String FROM = "origin";
 		public static final String TO = "destination";
+
+		public static final String DEFAULT_SORT = PRICE + " DESC";
 		public static final String getCreateTableQuery(){
 			return "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "( "+
 					_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -94,8 +95,8 @@ public class ItemsContract {
 	public static class StopsEntry implements BaseColumns{
 		//not yet completed.
 		public static final String TABLE_NAME = "stop";
-		public static final String _ID = "flight_id";
-		public static final String COLUMN_STOP_KEY = "stop_id";
+		public static final String _ID = "stop_id";
+		public static final String COLUMN_STOP_KEY = "flight_id";
 		public static final String TOTAL_DURATION = "duration";
 		public static final String PRICE = "price";
 		public static final String NUMBER_STOPS = "stops";

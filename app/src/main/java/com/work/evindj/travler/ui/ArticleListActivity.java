@@ -12,6 +12,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -23,13 +24,16 @@ import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
 import com.work.evindj.travler.R;
@@ -38,9 +42,13 @@ import com.work.evindj.travler.data.ItemsContract;
 import com.work.evindj.travler.data.UpdaterService;
 import com.squareup.picasso.Picasso;
 
+import org.w3c.dom.Text;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+
+import static com.google.android.gms.location.places.Place.TYPE_AIRPORT;
 
 /**
  * An activity representing a list of Articles. This activity has different presentations for
@@ -52,7 +60,7 @@ public class ArticleListActivity extends AppCompatActivity implements View.OnCli
         LoaderManager.LoaderCallbacks<Cursor> {
 
     private Toolbar mToolbar;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
+   // private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
     private SupportPlaceAutocompleteFragment airportOrigin;
     private SupportPlaceAutocompleteFragment airportArrival;
@@ -62,19 +70,17 @@ public class ArticleListActivity extends AppCompatActivity implements View.OnCli
     private DatePickerDialog toDatePickerDialog;
     private EditText fromDateEtxt;
     private EditText toDateEtxt;
+    private EditText originAirport;
+    private EditText destinationAirport;
     private SimpleDateFormat dateFormatter;
+    private Button search ;
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        airportOrigin.onActivityResult(requestCode, resultCode, data);
-        airportArrival.onActivityResult(requestCode, resultCode, data);
-    }
-    private void setupFragment1(SupportPlaceAutocompleteFragment fragment){
-         fragment = (SupportPlaceAutocompleteFragment)
-                getSupportFragmentManager().findFragmentById(R.id.place_autocomplete_depart);
 
-        fragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+    private void setupFragment1(){
+       // airportOrigin = (SupportPlaceAutocompleteFragment) getSupportFragmentManager().findFragmentById(R.id.place_autocomplete_depart);
+
+        airportOrigin.setFilter(new AutocompleteFilter.Builder().setTypeFilter(TYPE_AIRPORT).build());
+        airportOrigin.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
                 // TODO: Get info about the selected place.
@@ -89,11 +95,10 @@ public class ArticleListActivity extends AppCompatActivity implements View.OnCli
             }
         });
     }
-    private void setupFragment2(SupportPlaceAutocompleteFragment fragment){
-        fragment = (SupportPlaceAutocompleteFragment)
-                getSupportFragmentManager().findFragmentById(R.id.place_autocomplete_arrival);
-
-        fragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+    private void setupFragment2(){
+       // airportArrival = (SupportPlaceAutocompleteFragment)  getSupportFragmentManager().findFragmentById(R.id.place_autocomplete_arrival);
+        airportArrival.setFilter(new AutocompleteFilter.Builder().setTypeFilter(TYPE_AIRPORT).build());
+        airportArrival.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
                 // TODO: Get info about the selected place.
@@ -119,15 +124,19 @@ public class ArticleListActivity extends AppCompatActivity implements View.OnCli
         final View toolbarContainerView = findViewById(R.id.toolbar_container);
 
 
-        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+       // mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         getLoaderManager().initLoader(0, null, this);
-        dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
+        dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
         findViewsById();
 
         setDateTimeField();
+        /*
+        setupFragment1();
+        setupFragment2();
+        */
 
         if (savedInstanceState == null) {
             refresh();
@@ -138,9 +147,22 @@ public class ArticleListActivity extends AppCompatActivity implements View.OnCli
         fromDateEtxt = (EditText) findViewById(R.id.etxt_fromdate);
         fromDateEtxt.setInputType(InputType.TYPE_NULL);
         fromDateEtxt.requestFocus();
+        originAirport = (EditText) findViewById(R.id.etxt_origin);
+        destinationAirport = (EditText) findViewById(R.id.etxt_destination);
 
         toDateEtxt = (EditText) findViewById(R.id.etxt_todate);
         toDateEtxt.setInputType(InputType.TYPE_NULL);
+        search = (Button) findViewById(R.id.button_search);
+        search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String ori = originAirport.getText().toString();
+                String dest = destinationAirport.getText().toString();
+                String depDate = fromDateEtxt.getText().toString();
+                String arrDate = toDateEtxt.getText().toString();
+                launchService(depDate,arrDate,ori,dest);
+            }
+        });
     }
 
     private void setDateTimeField() {
@@ -172,14 +194,20 @@ public class ArticleListActivity extends AppCompatActivity implements View.OnCli
     private void refresh() {
         startService(new Intent(this, UpdaterService.class));
     }
+    private void launchService(String dateDep, String dateComeback, String airportFrom, String airportTo){
+        Intent i = new Intent(this, UpdaterService.class);
+        i.putExtra("dateDep", dateDep);
+        i.putExtra("dateComeback", dateComeback);
+        i.putExtra("airportFrom", airportFrom);
+        i.putExtra("airportTo", airportTo);
+        startService(i);
+    }
 
     @Override
     protected void onStart() {
         super.onStart();
         registerReceiver(mRefreshingReceiver,
                 new IntentFilter(UpdaterService.BROADCAST_ACTION_STATE_CHANGE));
-       setupFragment1(airportArrival);
-       setupFragment2(airportOrigin);
     }
 
     @Override
@@ -201,12 +229,13 @@ public class ArticleListActivity extends AppCompatActivity implements View.OnCli
     };
 
     private void updateRefreshingUI() {
-        mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
+        //mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return ArticleLoader.newAllArticlesInstance(this);
+        //return ArticleLoader.newAllArticlesInstance(this);
+        return ArticleLoader.AllFlightsInstances(this);
     }
 
     @Override
@@ -215,6 +244,7 @@ public class ArticleListActivity extends AppCompatActivity implements View.OnCli
         adapter.setHasStableIds(true);
         mRecyclerView.setAdapter(adapter);
         int columnCount = getResources().getInteger(R.integer.list_column_count);
+        columnCount =1;
         StaggeredGridLayoutManager sglm =
                 new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(sglm);
@@ -252,34 +282,23 @@ public class ArticleListActivity extends AppCompatActivity implements View.OnCli
             View view = getLayoutInflater().inflate(R.layout.list_item_article, parent, false);
             final ViewHolder vh = new ViewHolder(view);
             view.setContentDescription(getString(R.string.item_content_description));
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ImageView shareView = (ImageView) view.findViewById(R.id.thumbnail);
-                    Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(ArticleListActivity.this,shareView,shareView.getTransitionName()).toBundle();
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))),bundle);
-                }
-            });
+
             return vh;
         }
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             mCursor.moveToPosition(position);
-            holder.titleView.setText(StringUtilities.formatTitle(mCursor.getString(ArticleLoader.Query.TITLE)));
-            holder.subtitleView.setText(
-                    DateUtils.getRelativeTimeSpanString(
-                            mCursor.getLong(ArticleLoader.Query.PUBLISHED_DATE),
-                            System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-                            DateUtils.FORMAT_ABBREV_ALL).toString()
-                            + " by "
-                            + mCursor.getString(ArticleLoader.Query.AUTHOR));
+            holder.priceView.setText(mCursor.getString(ArticleLoader.FlightQuery.PRICE));
+            holder.durationView.setText(mCursor.getString(ArticleLoader.FlightQuery.TOTAL_DURATION) + " mins");
+            holder.stopsView.setText(mCursor.getString(ArticleLoader.FlightQuery.NUMBER_STOPS)+" stop(s)");
+            holder.toView.setText(mCursor.getString(ArticleLoader.FlightQuery.TO));
+            holder.fromView.setText(mCursor.getString(ArticleLoader.FlightQuery.FROM));
             /*holder.thumbnailView.setImageUrl(
                     mCursor.getString(ArticleLoader.Query.THUMB_URL),
                     ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());*/
-            String url = mCursor.getString(ArticleLoader.Query.THUMB_URL);
-            Picasso.with( holder.thumbnailView.getContext()).load(url).into(holder.thumbnailView);
+            //String url = mCursor.getString(ArticleLoader.Query.THUMB_URL);
+            //Picasso.with( holder.thumbnailView.getContext()).load(url).into(holder.thumbnailView);
             //holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
         }
 
@@ -293,12 +312,20 @@ public class ArticleListActivity extends AppCompatActivity implements View.OnCli
         public DynamicHeightNetworkImageView thumbnailView;
         public TextView titleView;
         public TextView subtitleView;
+        public TextView priceView;
+        public TextView fromView;
+        public TextView toView;
+        public TextView stopsView;
+        public TextView durationView;
 
         public ViewHolder(View view) {
             super(view);
-            thumbnailView = (DynamicHeightNetworkImageView) view.findViewById(R.id.thumbnail);
-            titleView = (TextView) view.findViewById(R.id.article_title);
-            subtitleView = (TextView) view.findViewById(R.id.article_subtitle);
+
+            priceView = (TextView) view.findViewById(R.id.price_tv);
+            fromView = (TextView) view.findViewById(R.id.from_txt);
+            toView = (TextView) view.findViewById(R.id.to_txt);
+            stopsView = (TextView) view.findViewById(R.id.stops_txt);
+            durationView = (TextView) view.findViewById(R.id.stops_duration);
         }
     }
 }

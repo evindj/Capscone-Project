@@ -7,5 +7,10 @@
     <dimen name="fab_elevation">2dp</dimen>
     <dimen name="fab_press_translation_z">8dp</dimen>
     <dimen name="fab_margin">24dp</dimen>
+    <dimen name="fourpx">4dp</dimen>
+    <dimen name="dimen_16">16dp</dimen>
+    <dimen name="dim_28">28dp</dimen>
+    <dimen name="dim_116">116dp</dimen>
+    <dimen name="dim_120">120dp</dimen>
 
 </resources>

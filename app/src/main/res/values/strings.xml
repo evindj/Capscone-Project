@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">XYZ Reader</string>
+    <string name="app_name">Travler</string>
     <string name="welcome_xyz_reader">Welcome to XYZ Reader!</string>
 
     <string name="action_refresh">Refresh</string>
@@ -12,6 +12,8 @@
     <string name="share_transition">shared_transition</string>
     <string name="content_description_share">click to share this article</string>
     <string name="str_from">Departure date</string>
-    <string name="str_to_date">Arrival date</string>
+    <string name="str_to_date">Return date</string>
+    <string name="hint_airport_text">3 letters</string>
+    <string name="Three_letters">3 letters</string>
 
 </resources>

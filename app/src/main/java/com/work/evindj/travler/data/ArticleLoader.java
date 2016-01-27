@@ -12,12 +12,35 @@ public class ArticleLoader extends CursorLoader {
         return new ArticleLoader(context, ItemsContract.Items.buildDirUri());
     }
 
+    public static ArticleLoader AllFlightsInstances(Context context){
+        return  new ArticleLoader(context, ItemsContract.Flights.buildDirUri(),FlightQuery.PROJECTION);
+    }
+
     public static ArticleLoader newInstanceForItemId(Context context, long itemId) {
         return new ArticleLoader(context, ItemsContract.Items.buildItemUri(itemId));
     }
-
+    private  ArticleLoader(Context context, Uri uri, String[] projections){
+        super(context, uri, projections, null, null, ItemsContract.Flights.DEFAULT_SORT);
+    }
     private ArticleLoader(Context context, Uri uri) {
         super(context, uri, Query.PROJECTION, null, null, ItemsContract.Items.DEFAULT_SORT);
+    }
+    public interface FlightQuery {
+        String[] PROJECTION = {
+                ItemsContract.Flights._ID,
+                ItemsContract.Flights.FROM,
+                ItemsContract.Flights.TO,
+                ItemsContract.Flights.PRICE,
+                ItemsContract.Flights.TOTAL_DURATION,
+                ItemsContract.Flights.NUMBER_STOPS
+        };
+
+        int _ID = 0;
+        int FROM = 1;
+        int TO = 2;
+        int PRICE = 3;
+        int TOTAL_DURATION = 4;
+        int NUMBER_STOPS = 5;
     }
 
     public interface Query {
